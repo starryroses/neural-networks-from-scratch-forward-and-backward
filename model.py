@@ -51,8 +51,23 @@ def make_dense(in_dim, out_dim, weight_init_fn):
 
     return {'params': params, 'forward': forward, 'backward': backward}
 
-# Step 4 - make_activation (not yet solved)
-# TODO: implement
+# Step 4 - make_activation
+import numpy as np
+
+def make_activation(kind='relu'):
+    if kind != 'relu':
+        raise ValueError(f"Unsupported activation kind: {kind}")
+
+    def forward(x):
+        y = np.maximum(0, x)
+        return y, x
+
+    def backward(dout, cache):
+        x = cache
+        dx = dout * (x > 0)
+        return dx, {}
+
+    return {'params': {}, 'forward': forward, 'backward': backward}
 
 # Step 5 - initialize_weights (not yet solved)
 # TODO: implement
