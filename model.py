@@ -84,8 +84,35 @@ def initialize_weights(in_dim, out_dim, scheme='he'):
     b = np.zeros(out_dim)
     return W, b
 
-# Step 6 - make_loss (not yet solved)
-# TODO: implement
+# Step 6 - make_loss
+import numpy as np
+
+def make_loss(kind='cross_entropy'):
+    if kind != 'cross_entropy':
+        raise ValueError(f"Unsupported loss kind: {kind}")
+
+    def loss_fn(logits, labels):
+        logits = np.asarray(logits, dtype=float)
+        labels = np.asarray(labels, dtype=int)
+        N = logits.shape[0]
+
+        # Shift logits by row max for numerical stability (prevents exp overflow)
+        shifted = logits - np.max(logits, axis=1, keepdims=True)
+        exp_scores = np.exp(shifted)
+        probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+
+        # Mean negative log-likelihood of the true class
+        correct_log_probs = -np.log(np.clip(probs[np.arange(N), labels], 1e-15, 1.0))
+        loss = float(np.mean(correct_log_probs))
+
+        # Analytic gradient: (probs - one_hot(labels)) / N
+        d_logits = probs.copy()
+        d_logits[np.arange(N), labels] -= 1.0
+        d_logits /= N
+
+        return loss, d_logits
+
+    return loss_fn
 
 # Step 7 - make_sequential (not yet solved)
 # TODO: implement
